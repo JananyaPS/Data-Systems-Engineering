@@ -1,0 +1,109 @@
+-- =========================================================
+-- Relational Query Engineering
+-- Analytical Queries (Materialized as tables)
+-- PostgreSQL
+-- =========================================================
+
+-- Clean prior outputs
+DROP TABLE IF EXISTS query1;
+DROP TABLE IF EXISTS query2;
+DROP TABLE IF EXISTS query3;
+DROP TABLE IF EXISTS query4;
+DROP TABLE IF EXISTS query5;
+
+-- ---------------------------------------------------------
+-- Query 1: Top subreddits by total comment volume
+-- ---------------------------------------------------------
+CREATE TABLE query1 AS
+SELECT
+  s.subreddit_id,
+  sr.display_name,
+  COUNT(c.comment_id) AS total_comments
+FROM subreddits sr
+JOIN submissions s ON s.subreddit_id = sr.subreddit_id
+LEFT JOIN comments c ON c.submission_id = s.submission_id
+GROUP BY s.subreddit_id, sr.display_name
+ORDER BY total_comments DESC, sr.display_name ASC;
+
+-- ---------------------------------------------------------
+-- Query 2: Top authors by total combined activity (submissions + comments)
+-- ---------------------------------------------------------
+CREATE TABLE query2 AS
+WITH submission_counts AS (
+  SELECT author_id, COUNT(*) AS num_submissions
+  FROM submissions
+  GROUP BY author_id
+),
+comment_counts AS (
+  SELECT author_id, COUNT(*) AS num_comments
+  FROM comments
+  GROUP BY author_id
+)
+SELECT
+  a.author_id,
+  a.author_name,
+  COALESCE(sc.num_submissions, 0) AS num_submissions,
+  COALESCE(cc.num_comments, 0)    AS num_comments,
+  (COALESCE(sc.num_submissions, 0) + COALESCE(cc.num_comments, 0)) AS total_activity
+FROM authors a
+LEFT JOIN submission_counts sc ON sc.author_id = a.author_id
+LEFT JOIN comment_counts cc ON cc.author_id = a.author_id
+ORDER BY total_activity DESC, a.author_name ASC;
+
+-- ---------------------------------------------------------
+-- Query 3: Submissions with the highest discussion intensity
+-- (comments per submission + submission score)
+-- ---------------------------------------------------------
+CREATE TABLE query3 AS
+SELECT
+  s.submission_id,
+  sr.display_name AS subreddit,
+  a.author_name   AS author,
+  s.title,
+  s.score,
+  COALESCE(s.num_comments, 0) AS num_comments,
+  (COALESCE(s.num_comments, 0) * 1.0 / NULLIF(GREATEST(s.score, 1), 0)) AS comments_per_score
+FROM submissions s
+JOIN subreddits sr ON sr.subreddit_id = s.subreddit_id
+JOIN authors a     ON a.author_id = s.author_id
+ORDER BY num_comments DESC, score DESC;
+
+-- ---------------------------------------------------------
+-- Query 4: Most active days (by combined submissions + comments)
+-- ---------------------------------------------------------
+CREATE TABLE query4 AS
+WITH sub_by_day AS (
+  SELECT date_trunc('day', created_utc) AS day, COUNT(*) AS submissions
+  FROM submissions
+  WHERE created_utc IS NOT NULL
+  GROUP BY date_trunc('day', created_utc)
+),
+com_by_day AS (
+  SELECT date_trunc('day', created_utc) AS day, COUNT(*) AS comments
+  FROM comments
+  WHERE created_utc IS NOT NULL
+  GROUP BY date_trunc('day', created_utc)
+)
+SELECT
+  COALESCE(s.day, c.day) AS day,
+  COALESCE(s.submissions, 0) AS submissions,
+  COALESCE(c.comments, 0)    AS comments,
+  (COALESCE(s.submissions, 0) + COALESCE(c.comments, 0)) AS total_events
+FROM sub_by_day s
+FULL OUTER JOIN com_by_day c ON c.day = s.day
+ORDER BY total_events DESC, day ASC;
+
+-- ---------------------------------------------------------
+-- Query 5: Comment contribution per subreddit (top authors per subreddit)
+-- ---------------------------------------------------------
+CREATE TABLE query5 AS
+SELECT
+  sr.display_name AS subreddit,
+  a.author_name   AS author,
+  COUNT(c.comment_id) AS comment_count
+FROM comments c
+JOIN submissions s ON s.submission_id = c.submission_id
+JOIN subreddits sr ON sr.subreddit_id = s.subreddit_id
+JOIN authors a ON a.author_id = c.author_id
+GROUP BY sr.display_name, a.author_name
+ORDER BY sr.display_name ASC, comment_count DESC, a.author_name ASC;
