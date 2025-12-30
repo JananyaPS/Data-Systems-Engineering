@@ -21,5 +21,3 @@ optimized in production environments.
 - **Data Integrity**: Primary keys, foreign keys, and cascading constraints
 - **Query Optimization**: Performance-aware SQL queries over large tables
 - **Automation**: Shell script to initialize schema, load data, and run queries
-
-## Project Structure
