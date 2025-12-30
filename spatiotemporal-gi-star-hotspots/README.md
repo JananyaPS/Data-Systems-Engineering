@@ -30,3 +30,24 @@ scoring over large datasets.
 - Statistical Scoring (Getis-Ord Gi\*)
 
 ## Project Structure
+spatiotemporal-gi-star-hotspots
+- README.md
+- src/
+- HotzoneAnalysis.scala
+- HotzoneUtils.scala
+- HotcellAnalysis.scala
+- HotcellUtils.scala
+
+## Input Format
+This project expects delimited text files containing:
+- Pickup/event location as a point string (e.g., `x,y` or `(x,y)` depending on the source)
+- Timestamp fields used to derive the temporal coordinate (Z)
+
+> Datasets are not included due to size and licensing constraints. Provide the
+> required input files locally.
+
+## Notes
+- Coordinates are treated as planar space for discretization and neighborhood computation.
+- Empty cells are handled implicitly when computing global statistics.
+- Output is hotspot-ranked grid cells based on Gi\* score.
+
