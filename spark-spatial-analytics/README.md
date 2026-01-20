@@ -25,8 +25,8 @@ in a big-data environment without relying on single-node GIS tooling.
 ## Project Structure
 spark-spatial-analytics/
   - README.md
-└── src/
-  - SpatialQuery.scala
+  - src/
+  -     SpatialQuery.scala
 
 ## Input Format
 This project expects delimited text/CSV files where each record contains a geometry string:
@@ -45,4 +45,4 @@ This project expects delimited text/CSV files where each record contains a geome
 
 ## Notes
 This project emphasizes distributed query processing patterns such as joins,
-filters, and UDF evaluation—key building blocks for scalable geospatial analytics.
+filters, and UDF evaluation, key building blocks for scalable geospatial analytics.
