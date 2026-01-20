@@ -26,7 +26,7 @@ in a big-data environment without relying on single-node GIS tooling.
 spark-spatial-analytics/
   - README.md
   - src/
-  -     SpatialQuery.scala
+  - SpatialQuery.scala
 
 ## Input Format
 This project expects delimited text/CSV files where each record contains a geometry string:
