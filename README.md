@@ -2,8 +2,8 @@
 
 A curated portfolio of data systems projects focused on **performance-aware design,
 scalability, and real-world data processing**.  
-These projects explore how modern data platforms are built—from relational query
-optimization to distributed analytics and storage-engine internals.
+These projects explore how modern data platforms are built from relational query
+optimization to distributed analytics and storage engine internals.
 
 The repository demonstrates hands-on experience with **database design, query
 execution, distributed computation, spatial analytics, and NoSQL storage systems**,
